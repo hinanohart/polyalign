@@ -3,31 +3,89 @@
   "product": "polyalign",
   "repo_slug": "hinanohart/polyalign",
   "protocol_version": "1.0",
-  "current_step": "S1",
-  "completed_steps": ["S0"],
+  "current_step": "S11",
+  "completed_steps": [
+    "S0",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S7.5",
+    "S8",
+    "S9",
+    "S10"
+  ],
   "step_attempts": 1,
   "step_started_at": "2026-05-29T02:43:00Z",
-  "step_ended_at": null,
-  "commit_sha": null,
-  "test_count": 0,
-  "coverage": 0.0,
+  "step_ended_at": "2026-05-29T03:18:00Z",
+  "commit_sha": "da2dbed",
+  "test_count": 79,
+  "coverage": 0.939,
   "next_action": "S1 scaffold complete, proceeding to S2 gavagai bridge",
   "pivot_flag": true,
   "pivot_target": "Case C (synthetic ground truth only)",
   "pivot_history": [
-    {"case": "C", "trigger": "OQ3", "reason": "live cross-model SAE inference infeasible inside build session", "activated_at": "2026-05-29T02:44:00Z"}
+    {
+      "case": "C",
+      "trigger": "OQ3",
+      "reason": "live cross-model SAE inference infeasible inside build session",
+      "activated_at": "2026-05-29T02:44:00Z"
+    }
   ],
-  "ground_truth_count": 0,
+  "ground_truth_count": 36,
   "decisions": {
     "public_name": "polyalign",
-    "name_fallbacks": ["sae-polyalign", "polyalign-sae", "alignpoly"],
+    "name_fallbacks": [
+      "sae-polyalign",
+      "polyalign-sae",
+      "alignpoly"
+    ],
     "license": "Apache-2.0",
-    "core_carriers": ["transformer", "ssm", "hybrid"],
-    "v010_models_structural": ["gpt2-small (structural)", "pythia-160m (structural)", "mamba-2-130m (structural)"],
-    "core_libs": ["numpy>=1.26", "scipy>=1.13", "pot>=0.9.5", "typer>=0.12"],
-    "optional_libs": {"torch": ["torch>=2.2"], "saelens": ["sae-lens>=4.0"], "llama3": ["transformers>=4.45"], "mamba": ["mamba-ssm>=2.2"]},
-    "math_components": ["Sinkhorn-OT", "Matryoshka prefix", "OTCP split conformal", "PAVA isotonic", "polytope vertices"],
-    "deferred_to_v02": ["Poincare ball", "OKLab visualization", "Muon optimizer"],
+    "core_carriers": [
+      "transformer",
+      "ssm",
+      "hybrid"
+    ],
+    "v010_models_structural": [
+      "gpt2-small (structural)",
+      "pythia-160m (structural)",
+      "mamba-2-130m (structural)"
+    ],
+    "core_libs": [
+      "numpy>=1.26",
+      "scipy>=1.13",
+      "pot>=0.9.5",
+      "typer>=0.12"
+    ],
+    "optional_libs": {
+      "torch": [
+        "torch>=2.2"
+      ],
+      "saelens": [
+        "sae-lens>=4.0"
+      ],
+      "llama3": [
+        "transformers>=4.45"
+      ],
+      "mamba": [
+        "mamba-ssm>=2.2"
+      ]
+    },
+    "math_components": [
+      "Sinkhorn-OT",
+      "Matryoshka prefix",
+      "OTCP split conformal",
+      "PAVA isotonic",
+      "polytope vertices"
+    ],
+    "deferred_to_v02": [
+      "Poincare ball",
+      "OKLab visualization",
+      "Muon optimizer"
+    ],
     "calibration": {
       "isotonic": "PAVA (foldconsensus vendoring)",
       "ece_bins": "equal-frequency 10-15",
@@ -45,54 +103,106 @@
     ]
   },
   "s0_verification_results": {
-    "OQ1_gavagai_v03_vs_new": {"checked": true, "verdict": "proceed", "evidence": "gavagai_score(sae_a, sae_b, ...) is strictly pairwise; N>=3 generalization requires breaking API change. polyalign is a natural N x M generalization as new OSS, not gavagai v0.3 PR."},
-    "OQ2_cross_arch_exchangeability": {"checked": true, "verdict": "proceed", "evidence": "POT 0.9.6.post1 + scipy 1.17 + torch 2.11 CPU available. Default marginal coverage; conditional fallback if needed.", "degrade_mode": "marginal-default"},
-    "OQ3_ground_truth_30": {"checked": true, "verdict": "degrade", "target_n": 30, "feasible_source": "synthetic IOI 30 pairs with [DEMO] prefix; Case C activated"},
-    "OQ4_prior_art": {"checked": true, "verdict": "proceed", "collisions": ["SPARC (arXiv 2507.06265, training-time, orthogonal)", "AlignSAE (arXiv 2512.02004, training-time, orthogonal)", "Anthropic crosscoder (closed-source)", "ckkissane crosscoder (Euclidean, single arch)"], "evidence": "No existing OSS computes N >= 3 M >= 2 alignment polytope vertices with coverage-guaranteed Pareto front."}
+    "OQ1_gavagai_v03_vs_new": {
+      "checked": true,
+      "verdict": "proceed",
+      "evidence": "gavagai_score(sae_a, sae_b, ...) is strictly pairwise; N>=3 generalization requires breaking API change. polyalign is a natural N x M generalization as new OSS, not gavagai v0.3 PR."
+    },
+    "OQ2_cross_arch_exchangeability": {
+      "checked": true,
+      "verdict": "proceed",
+      "evidence": "POT 0.9.6.post1 + scipy 1.17 + torch 2.11 CPU available. Default marginal coverage; conditional fallback if needed.",
+      "degrade_mode": "marginal-default"
+    },
+    "OQ3_ground_truth_30": {
+      "checked": true,
+      "verdict": "degrade",
+      "target_n": 30,
+      "feasible_source": "synthetic IOI 30 pairs with [DEMO] prefix; Case C activated"
+    },
+    "OQ4_prior_art": {
+      "checked": true,
+      "verdict": "proceed",
+      "collisions": [
+        "SPARC (arXiv 2507.06265, training-time, orthogonal)",
+        "AlignSAE (arXiv 2512.02004, training-time, orthogonal)",
+        "Anthropic crosscoder (closed-source)",
+        "ckkissane crosscoder (Euclidean, single arch)"
+      ],
+      "evidence": "No existing OSS computes N >= 3 M >= 2 alignment polytope vertices with coverage-guaranteed Pareto front."
+    }
   },
-  "org_dup_check": {"checked": true, "repo_count": 120, "collisions": [], "verdict": "polyalign repo name available (gh repo view 404), pip index versions polyalign returns no distribution"},
+  "org_dup_check": {
+    "checked": true,
+    "repo_count": 120,
+    "collisions": [],
+    "verdict": "polyalign repo name available (gh repo view 404), pip index versions polyalign returns no distribution"
+  },
   "measured": {
-    "top1_vertex_accuracy": null,
-    "top5_vertex_accuracy": null,
-    "ece": null,
-    "otcp_coverage": null,
-    "cycle_consistency_rate": null,
-    "dataset": {"n": null, "mode": "synthetic", "source": "Case C activated"},
-    "results_path": null,
-    "reproduced_in_clean_clone": false
+    "top1_vertex_accuracy": 0.042,
+    "top5_vertex_accuracy": 0.208,
+    "ece": 0.99,
+    "otcp_coverage": 1.0,
+    "cycle_consistency_rate": 1.0,
+    "dataset": {
+      "n": 36,
+      "mode": "synthetic",
+      "source": "datasets/ground_truth_v0.1.0a1.jsonl Case C"
+    },
+    "results_path": "results/v0.1.0a1_ablation.json",
+    "reproduced_in_clean_clone": true
   },
   "critic": {
-    "rounds": 0,
-    "verdict_builder": null,
-    "verdict_critic": null,
-    "verdict_github_state": null,
+    "rounds": 1,
+    "verdict_builder": "SHIP-OK-WITH-NITS",
+    "verdict_critic": "SHIP-OK-equivalent (after B-B2 resolution)",
+    "verdict_github_state": "SHIP-OK (after C-B1/C-B3 resolution, C-B2 disputed and addressed via planted regime)",
     "blockers_open": [],
-    "verdict_path": null
+    "verdict_path": "audits/v0.1.0a1_{A,B,C}_verdict.json"
   },
   "publish": {
     "name_checked": true,
-    "repo_created": false,
-    "branch_protected": false,
-    "tagged": false,
-    "released": false,
-    "pypi": "deferred",
-    "dependabot_configured": false
+    "repo_created": true,
+    "branch_protected": true,
+    "tagged": true,
+    "released": true,
+    "pypi": "deferred to v0.1.1",
+    "dependabot_configured": true
   },
   "checklist": {
-    "S0": true, "S1": false, "S2": false, "S3": false, "S4": false,
-    "S5": false, "S6": false, "S7": false, "S7_5": false,
-    "S8": false, "S9": false, "S10": false, "S11": false
+    "S0": true,
+    "S1": true,
+    "S2": true,
+    "S3": true,
+    "S4": true,
+    "S5": true,
+    "S6": true,
+    "S7": true,
+    "S7_5": true,
+    "S8": true,
+    "S9": true,
+    "S10": true,
+    "S11": true
   },
   "blockers": [],
   "wip_quarantine": [],
   "retry_counts": {},
   "fallback_log": [
-    {"step": "S0", "case": "C", "reason": "OQ3 ground truth >= 30 live curation infeasible in single session"}
+    {
+      "step": "S0",
+      "case": "C",
+      "reason": "OQ3 ground truth >= 30 live curation infeasible in single session"
+    }
   ],
   "circuit_breaker": {
     "max_attempts_per_step": 5,
     "critic_max_rounds": 3,
     "max_total_hours": 768
   },
-  "human_pause": {"paused": false, "reason": null, "since": null}
+  "human_pause": {
+    "paused": false,
+    "reason": null,
+    "since": null
+  },
+  "status": "HONEST-PREALPHA-COMPLETE"
 }
