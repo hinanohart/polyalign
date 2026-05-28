@@ -72,7 +72,8 @@ polyalign-lint align --bundles bundle_a.npz,bundle_b.npz --top-k 5
 - **`AlignSAE`** (arXiv 2512.02004) — concept-aligned SAE training (training-time). `polyalign` is **post-hoc alignment** over pre-trained SAEs (no retraining required).
 - **Anthropic `crosscoder`** (closed-source) — 2-model differential SAE. `polyalign` is **open-source N-model multi-architecture** and ships an OTCP split-conformal coverage band per vertex.
 - **`SPARC`** (arXiv 2507.06265) — concept-aligned SAEs for cross-model / cross-modal training. `polyalign` is post-hoc and does not retrain SAEs.
-- **`ckkissane/crosscoder-model-diff-replication`** — Anthropic crosscoder Euclidean replication. `polyalign` ships OTCP coverage + Sinkhorn-OT + first-class SSM carrier support.
+- **`ckkissane/crosscoder-model-diff-replication`** — Anthropic crosscoder Euclidean replication. `polyalign` ships OTCP coverage + Sinkhorn-OT + native SSM carrier support.
+- **`neelnanda-io/Crosscoders`** — early open-source crosscoder reference impl, 2-model + Transformer. `polyalign` ships N >= 2, SSM/Transformer/Hybrid carrier mix, OTCP split-conformal coverage band per vertex.
 - **OpenMOSS / Llamascopium** — per-model Matryoshka SAE. `polyalign` ships **cross-architecture** Matryoshka with Sinkhorn-OT pairwise alignment.
 
 ## Honest-marketing scope
