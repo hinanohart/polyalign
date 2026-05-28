@@ -93,13 +93,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: every bullet must be tagged [CLAIM] or [non-CLAIM]
+      - name: line-start tag enforcement
         run: |
-          # find lines beginning with '- ' that have no [CLAIM] / [non-CLAIM] tag
-          untagged=$(grep -E '^- ' docs/CLAIM.md | grep -vE '\[(CLAIM|non-CLAIM)\]' || true)
-          if [ -n "$untagged" ]; then
-            echo "::error::docs/CLAIM.md has untagged bullets:"
-            echo "$untagged"
+          # protocol §7: count line-start [CLAIM] / [non-CLAIM] tags and
+          # require >= 10 (10 was the minimum at v0.1.0a1; raise as needed).
+          # We additionally forbid the legacy bullet-list form (`- [CLAIM]`)
+          # which the C critic flagged as missing line-start anchor.
+          claims=$(grep -cE '^\[CLAIM\] ' docs/CLAIM.md || true)
+          nonclaims=$(grep -cE '^\[non-CLAIM\] ' docs/CLAIM.md || true)
+          legacy=$(grep -cE '^- ' docs/CLAIM.md || true)
+          echo "claims=$claims nonclaims=$nonclaims legacy_bullets=$legacy"
+          if [ "$claims" -lt 10 ]; then
+            echo "::error::docs/CLAIM.md has $claims line-start [CLAIM] tags; require >= 10"
             exit 1
           fi
-          echo "ok: all docs/CLAIM.md bullets carry [CLAIM] or [non-CLAIM]"
+          if [ "$nonclaims" -lt 5 ]; then
+            echo "::error::docs/CLAIM.md has $nonclaims line-start [non-CLAIM] tags; require >= 5"
+            exit 1
+          fi
+          if [ "$legacy" -gt 0 ]; then
+            echo "::error::docs/CLAIM.md contains $legacy legacy bullet-list lines; convert to line-start [CLAIM] / [non-CLAIM] paragraphs"
+            exit 1
+          fi
+          echo "ok: line-start tag enforcement passed"

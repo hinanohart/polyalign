@@ -17,95 +17,214 @@
     {
       "cost": "cosine",
       "reg": 0.05,
-      "carrier_set": "transformer-only"
+      "carrier_set": "transformer-only",
+      "regime": "random"
     },
     {
       "cost": "cosine",
       "reg": 0.05,
-      "carrier_set": "ssm-only"
+      "carrier_set": "transformer-only",
+      "regime": "planted"
     },
     {
       "cost": "cosine",
       "reg": 0.05,
-      "carrier_set": "hybrid-only"
+      "carrier_set": "ssm-only",
+      "regime": "random"
     },
     {
       "cost": "cosine",
       "reg": 0.05,
-      "carrier_set": "mixed"
+      "carrier_set": "ssm-only",
+      "regime": "planted"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "hybrid-only",
+      "regime": "random"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "hybrid-only",
+      "regime": "planted"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "mixed",
+      "regime": "random"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "mixed",
+      "regime": "planted"
     },
     {
       "cost": "l2",
       "reg": 0.05,
-      "carrier_set": "mixed"
+      "carrier_set": "mixed",
+      "regime": "random"
+    },
+    {
+      "cost": "l2",
+      "reg": 0.05,
+      "carrier_set": "mixed",
+      "regime": "planted"
     },
     {
       "cost": "cosine",
       "reg": 0.01,
-      "carrier_set": "mixed"
+      "carrier_set": "mixed",
+      "regime": "random"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.01,
+      "carrier_set": "mixed",
+      "regime": "planted"
     },
     {
       "cost": "cosine",
       "reg": 0.1,
-      "carrier_set": "mixed"
+      "carrier_set": "mixed",
+      "regime": "random"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.1,
+      "carrier_set": "mixed",
+      "regime": "planted"
     }
   ],
   "metrics_by_setting": {
-    "cosine_r0.05_transformer-only": {
+    "cosine_r0.05_transformer-only_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9992369604616476,
       "otcp_coverage": 0.9999997259787079,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "cosine_r0.05_ssm-only": {
+    "cosine_r0.05_transformer-only_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9982758849986886,
+      "otcp_coverage": 0.9999999953385467,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "cosine_r0.05_ssm-only_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9992369604616476,
       "otcp_coverage": 0.9999997259787079,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "cosine_r0.05_hybrid-only": {
+    "cosine_r0.05_ssm-only_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9982758849986886,
+      "otcp_coverage": 0.9999999953385467,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "cosine_r0.05_hybrid-only_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9992369604616476,
       "otcp_coverage": 0.9999997259787079,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "cosine_r0.05_mixed": {
+    "cosine_r0.05_hybrid-only_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9982758849986886,
+      "otcp_coverage": 0.9999999953385467,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "cosine_r0.05_mixed_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9992160218374374,
       "otcp_coverage": 0.9999997684290798,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "l2_r0.05_mixed": {
+    "cosine_r0.05_mixed_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9982884727956556,
+      "otcp_coverage": 0.999999974799041,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "l2_r0.05_mixed_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9992189320246404,
       "otcp_coverage": 0.9999988453914834,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "cosine_r0.01_mixed": {
+    "l2_r0.05_mixed_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.998265077065871,
+      "otcp_coverage": 0.9999999867094707,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "cosine_r0.01_mixed_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.998304179956112,
       "otcp_coverage": 1.0,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
     },
-    "cosine_r0.1_mixed": {
+    "cosine_r0.01_mixed_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9982638888888977,
+      "otcp_coverage": 1.0,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
+    },
+    "cosine_r0.1_mixed_random": {
       "top1": 0.0,
       "top5": 0.0,
       "ece": 0.9997375607175191,
       "otcp_coverage": 0.9999544031917658,
       "n_vertices": 5,
-      "cycle_consistency_rate": 1.0
+      "cycle_consistency_rate": 1.0,
+      "regime": "random"
+    },
+    "cosine_r0.1_mixed_planted": {
+      "top1": 0.041666666666666664,
+      "top5": 0.20833333333333334,
+      "ece": 0.9987869845840268,
+      "otcp_coverage": 0.9999777186862974,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0,
+      "regime": "planted"
     }
   }
 }

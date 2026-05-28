@@ -1,0 +1,72 @@
+{
+  "verdict": "SHIP-OK-WITH-NITS",
+  "blockers": [],
+  "nits": [
+    {
+      "id": "N1",
+      "severity": "medium",
+      "file_line": "src/polyalign/alignment/sinkhorn.py:84 + alignment/pairwise.py:35",
+      "finding": "sinkhorn_align() returns a plan with all-NaN entries when non-convergence occurs (e.g. reg=1e-6, max_iter=10). No NaN guard post-POT call; alignment_polytope propagates silently to Vertex.joint_probability=NaN. Reproduced: reg=1e-6 → 'Numerical errors at iteration 1' → joint_probability=nan. Default reg=0.05 is unaffected (test_sinkhorn_cross_architecture_no_nan PASS). Risk is user-supplied extreme reg. Suggested fix: raise ValueError or clamp plan after ot.sinkhorn call."
+    },
+    {
+      "id": "N2",
+      "severity": "low",
+      "file_line": "scripts/run_ablation.py top1/top5 computation",
+      "finding": "top1=0.000 and top5=0.000 for ALL 7 settings. This is mathematically expected (random Gaussian decoders, feature_id_A range 0-63 mod n_feat=24 makes exact index match near-zero probability), and README:124 explicitly discloses 'synthetic alignment quality on random Gaussian decoders'. Not vacuous in the audit.yml sense, but a human reader may mistake the metric as meaningful — recommend brief inline comment in ablation script."
+    }
+  ],
+  "checklist_results": {
+    "1": "pass",
+    "2": "pass",
+    "3": "pass",
+    "4": "pass",
+    "5": "pass",
+    "6": "pass"
+  },
+  "evidence": [
+    {
+      "file_line": ".polyalign-progress.json:.current_step",
+      "finding": "current_step='S1', completed_steps=['S0'] — not S0. PASS"
+    },
+    {
+      "file_line": "src/polyalign/backends/gavagai_bridge.py:18 + decisions.v010_models_structural",
+      "finding": "decisions lists 3 structural models (gpt2-small/pythia-160m/mamba-2-130m). gavagai_bridge from_gavagai/from_decoder_matrix accept any SAEBundle — N-agnostic. N>=2 constraint satisfied. PASS"
+    },
+    {
+      "file_line": "src/polyalign/alignment/sinkhorn.py:84 | matryoshka.py:82 | conformal/otcp.py:51 | calibration/pava.py:19 | polytope/vertices.py:91",
+      "finding": "All 5 components present with real implementations (not stubs). PASS"
+    },
+    {
+      "file_line": "datasets/ground_truth_v0.1.0a1.jsonl",
+      "finding": "wc -l=36 (>=30 PASS); grep -c '[DEMO]'=36 (100% match, Case C enforced). PASS"
+    },
+    {
+      "file_line": "results/v0.1.0a1_ablation.json + README.md:128-134",
+      "finding": "README table row cosine_r0.05_transformer-only: top1=0.000 top5=0.000 ece=0.9992 otcp=1.0000 n_v=5 cc=1.000 — byte-exact match with ablation.json. PASS"
+    },
+    {
+      "file_line": "pyproject.toml [project.scripts] + CLI stdout",
+      "finding": "uv run polyalign-lint version → '0.1.0a1'; uv run polyalign-lint smoke → 'smoke ok: vertices=3 alpha=0.10 q=1.0000'. PASS"
+    },
+    {
+      "file_line": "pytest --no-cov -q",
+      "finding": "79 passed, 1 warning in 3.61s. Warning: 'Sinkhorn did not converge' in test_sinkhorn_reg_decay_concentrates (known convergence probe, not a failure path in default usage). PASS"
+    },
+    {
+      "file_line": "src/polyalign/alignment/sinkhorn.py:84 (NaN bug repro)",
+      "finding": "REPRO: sinkhorn_align(reg=1e-6) → plan NaN count=64/64 → alignment_polytope → Vertex.joint_probability=nan. No guard at sinkhorn_align output. Blocker-level only if user-facing API permits reg<0.01 without warning. Default path (reg=0.05) is clean."
+    },
+    {
+      "file_line": "docs/CLAIM.md",
+      "finding": "Every bullet tagged [CLAIM] or [non-CLAIM]. ECE/calibration is NON-CLAIM for real data. Live model non-CLAIM. Ground truth synthetic non-CLAIM. Honest disclosure complete. PASS"
+    },
+    {
+      "file_line": ".github/workflows/audit.yml",
+      "finding": "demo-prefix CI: total==demo enforced; banned-phrase ERE alternation (no BRE/ERE bug per feedback_ci-grep-bre-vs-ere); diff-disclaimer checks gavagai/AlignSAE/crosscoder; vacuous-test catches bare assert True; CLAIM.md tag enforcement. PASS"
+    }
+  ],
+  "verdict_text": "All 6 checklist items PASS. 79/79 tests green. polyalign-lint smoke clean. 36 [DEMO]-prefixed synthetic pairs. README numbers machine-sourced from ablation.json. Case C honest disclosure complete across README/CLAIM.md/NOTICE/CHANGELOG. One medium nit: sinkhorn_align silently returns NaN plan on extreme reg (e.g. 1e-6); default reg=0.05 is unaffected and this is non-blocking for pre-alpha. S9 publish may proceed.",
+  "agent": "Monitor-A (Builder verifier)",
+  "timestamp": "2026-05-29",
+  "repo": "/home/runza/work/polyalign"
+}

@@ -61,16 +61,50 @@ def _make_bundle(
     )
 
 
+def _planted_bundles(
+    seed: int, carriers: list[str], n_feat: int, d_model: int
+) -> tuple[list[SAEBundle], list[np.ndarray]]:
+    """Synthetic 'planted' regime: a base decoder is permuted per bundle.
+
+    Returns the SAEBundle list and the inverse permutations (so that
+    ground-truth row's feature_id in bundle i corresponds to the same
+    *base concept* across bundles). The ablation runner uses this to
+    score Sinkhorn-OT's ability to recover the planted permutations -
+    a non-trivial signal even on synthetic data, with regime explicitly
+    recorded in the JSON cell. See docs/CLAIM.md for honest scope.
+    """
+    rng = np.random.default_rng(seed)
+    base = rng.standard_normal((n_feat, d_model)).astype(np.float32)
+    bundles: list[SAEBundle] = []
+    perms: list[np.ndarray] = []
+    for i, carrier in enumerate(carriers):
+        perm = rng.permutation(n_feat) if i > 0 else np.arange(n_feat)
+        # bundle i's decoder = base[perm]; row j of bundle 0 corresponds
+        # to row perm[j]^{-1} of bundle i. We store the forward perm.
+        decoder = base[perm].copy()
+        bundles.append(
+            SAEBundle(
+                model_id=f"planted_{i}_{carrier}",
+                architecture=carrier,  # type: ignore[arg-type]
+                layer=6,
+                decoder=decoder,
+            )
+        )
+        perms.append(perm)
+    return bundles, perms
+
+
 def run_setting(
     *,
     cost: str,
     reg: float,
     carrier_set: str,
+    regime: str,
     n_feat: int,
     d_model: int,
     seed: int,
     gt_rows: list[dict],
-) -> dict[str, float | int]:
+) -> dict[str, float | int | str]:
     rng = np.random.default_rng(seed)
     if carrier_set == "transformer-only":
         carriers = ["transformer"] * 3
@@ -81,27 +115,41 @@ def run_setting(
     else:
         carriers = ["transformer", "ssm", "hybrid"]
 
-    bundles = [
-        _make_bundle(rng, f"synth_{i}_{carriers[i]}", carriers[i], n_feat, d_model)
-        for i in range(3)
-    ]
+    if regime == "planted":
+        bundles, perms = _planted_bundles(seed, carriers, n_feat, d_model)
+        # For the planted regime, the ground-truth feature-pair across bundle 0
+        # and bundle 1 is (k, perm_1^{-1}(perm_0(k))) = (k, inv_perm_1[k]).
+        # We score with the actual planted permutation, ignoring gt_rows.
+        inv_perm_1 = np.argsort(perms[1])
+        target_pairs = [(k, int(inv_perm_1[k])) for k in range(n_feat)]
+        used = len(target_pairs)
+    else:
+        # "random" regime: random Gaussian decoders, ground-truth row indices
+        # come from datasets/ground_truth_v0.1.0a1.jsonl (Case C synthetic with
+        # NO planted alignment). Expected top-k ~ 0 (mathematically correct
+        # baseline; see docs/CLAIM.md).
+        bundles = [
+            _make_bundle(rng, f"random_{i}_{carriers[i]}", carriers[i], n_feat, d_model)
+            for i in range(3)
+        ]
+        used = min(len(gt_rows), 30)
+        target_pairs = [
+            (int(row["feature_id_A"]) % n_feat, int(row["feature_id_B"]) % n_feat)
+            for row in gt_rows[:used]
+        ]
+
     result = alignment_polytope(bundles, top_k=5, alpha=0.1, reg=reg, cost=cost)
 
-    # synthetic Top-k vertex matching against ground truth pair indices
     top1_hits = 0
     top5_hits = 0
-    used = min(len(gt_rows), 30)
-    for row in gt_rows[:used]:
-        target_a = int(row["feature_id_A"]) % n_feat
-        target_b = int(row["feature_id_B"]) % n_feat
-        # naive matching: at least one vertex edge contains target_a -> target_b
+    for target_a, target_b in target_pairs:
         in_top1 = any(
-            edge[2] == target_a and edge[3] == target_b
+            edge[0] == 0 and edge[1] == 1 and edge[2] == target_a and edge[3] == target_b
             for v in result.vertices[:1]
             for edge in v.model_pairs
         )
         in_top5 = any(
-            edge[2] == target_a and edge[3] == target_b
+            edge[0] == 0 and edge[1] == 1 and edge[2] == target_a and edge[3] == target_b
             for v in result.vertices[:5]
             for edge in v.model_pairs
         )
@@ -162,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: ground truth count {len(gt_rows)} < 30", file=sys.stderr)
         return 1
 
-    settings = [
+    base_settings = [
         {"cost": "cosine", "reg": 0.05, "carrier_set": "transformer-only"},
         {"cost": "cosine", "reg": 0.05, "carrier_set": "ssm-only"},
         {"cost": "cosine", "reg": 0.05, "carrier_set": "hybrid-only"},
@@ -171,18 +219,24 @@ def main(argv: list[str] | None = None) -> int:
         {"cost": "cosine", "reg": 0.01, "carrier_set": "mixed"},
         {"cost": "cosine", "reg": 0.10, "carrier_set": "mixed"},
     ]
+    # Each setting is run under both 'random' (no planted alignment, expected
+    # top-k ~ 0) and 'planted' (bundle B is a permutation of bundle A, expected
+    # top-k > 0 if Sinkhorn-OT works). docs/CLAIM.md describes the regimes.
+    settings = [{**s, "regime": regime} for s in base_settings for regime in ("random", "planted")]
     metrics_by_setting: dict[str, dict] = {}
     for setting in settings:
-        key = f"{setting['cost']}_r{setting['reg']}_{setting['carrier_set']}"
+        key = f"{setting['cost']}_r{setting['reg']}_{setting['carrier_set']}_{setting['regime']}"
         m = run_setting(
             cost=str(setting["cost"]),
             reg=float(setting["reg"]),
             carrier_set=str(setting["carrier_set"]),
+            regime=str(setting["regime"]),
             n_feat=args.n_feat,
             d_model=args.d_model,
             seed=args.seed,
             gt_rows=gt_rows,
         )
+        m["regime"] = str(setting["regime"])
         metrics_by_setting[key] = m
 
     payload = {

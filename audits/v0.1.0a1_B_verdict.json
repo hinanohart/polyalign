@@ -1,0 +1,123 @@
+{
+  "verdict": "DO-NOT-SHIP",
+  "agent": "B (Critic / honest-marketing + prior-art)",
+  "timestamp": "2026-05-29T03:10:00Z",
+  "phase": "S8 pre-flight (pre-S9)",
+  "blockers": [
+    {
+      "id": "B-B1",
+      "severity": "CRITICAL",
+      "title": "[CLAIM] tag overclaims OTCP marginal coverage vs the test it cites",
+      "evidence_file": "docs/CLAIM.md:9 vs tests/test_otcp.py:55,60,72,80",
+      "claim_text": "[CLAIM] OTCP split conformal ... achieves marginal coverage >= 1 - alpha on synthetic exchangeable data over 100 bootstrap trials, 95% of the time (tests/test_otcp.py).",
+      "test_actual": "n_trials = 60 (line 60), alpha = 0.2 fixed (line 58), 15% coverage slack `coverage >= target_coverage - 0.15` (line 78), threshold `hits / n_trials >= 0.5` (line 80). Therefore test verifies: 60 trials, 50% pass rate, within 15% of target at a single alpha.",
+      "delta": "CLAIM says 100/95%; test enforces 60/50% with 15% slack. The [CLAIM] tag is unbacked by its own cited test. Honest-marketing absolutism violated.",
+      "fix_options": [
+        "(a) raise n_trials to 100, threshold to >= 0.95, drop the 15% slack, sweep alpha — then keep CLAIM text.",
+        "(b) soften CLAIM.md:9 to mirror the actual test: 'achieves marginal coverage within 15% of 1 - alpha at alpha=0.2 over 60 bootstrap trials, at least 50% of the time (tests/test_otcp.py)' — and also update the test docstring line 55 to stop saying 100/95%."
+      ],
+      "category": "honest-marketing absolutism (checklist 4 + 7)"
+    }
+  ],
+  "majors": [
+    {
+      "id": "B-M1",
+      "title": "CLAIM.md tag placement does not satisfy HONEST-PREALPHA-COMPLETE §7 spec grep",
+      "evidence_file": "docs/CLAIM.md (all bullet lines) vs bootstrap_protocol §7 line 623",
+      "spec_grep": "grep -E '^\\[(CLAIM|non-CLAIM)\\]' docs/CLAIM.md  # protocol §7 says this MUST match every relevant line",
+      "actual": "Every CLAIM line starts with `- ` (bullet) then `[CLAIM]` / `[non-CLAIM]` — so the §7 line-leading grep returns 0 matches.",
+      "ci_yml_workaround": "audit.yml uses a different grep (`grep -E '^- ' | grep -vE '\\[(CLAIM|non-CLAIM)\\]'`) which DOES pass — so CI green, but S11 §7 verification will fail.",
+      "fix_options": [
+        "(a) update bootstrap_protocol §7 line 623 to match the audit.yml grep (RECOMMENDED — audit.yml is more robust for bullet style).",
+        "(b) reformat docs/CLAIM.md so every CLAIM line starts at column 0 with `[CLAIM]` / `[non-CLAIM]` (sacrifices markdown bullet rendering)."
+      ],
+      "consensus_with_C": "Agent C flagged the same issue as C-B3 — independent confirmation."
+    },
+    {
+      "id": "B-M2",
+      "title": "PAVA 'strict copy + inherits foldconsensus tests' CLAIM is unverified by tests/test_calibration.py",
+      "evidence_file": "docs/CLAIM.md:11 vs tests/test_calibration.py:11-50",
+      "claim_text": "[CLAIM] PAVA monotone isotonic regression (vendored from foldconsensus, Apache-2.0) is a strict copy and inherits foldconsensus's PAVA tests.",
+      "test_actual": "tests/test_calibration.py contains 7 freshly-written PAVA tests (test_pava_already_monotone_is_identity, test_pava_strict_decreasing_becomes_constant_mean, etc.) that look like newly authored invariant checks, not literal copies of upstream foldconsensus tests. No header attribution 'copied from foldconsensus/tests/...' is present.",
+      "fix": "Soften CLAIM.md:11 to: '[CLAIM] PAVA monotone isotonic regression is vendored from foldconsensus (Apache-2.0 with attribution in src/polyalign/calibration/pava.py header) and re-verified by polyalign-side property tests in tests/test_calibration.py.'"
+    },
+    {
+      "id": "B-M3",
+      "title": "scripts/verify_step.py missing — /compact resume path will cold-restart from S0",
+      "evidence_file": "scripts/ (no verify_step.py) vs bootstrap_protocol §1 S1 line 99 + §3 line 494",
+      "spec": "S1 explicitly lists 'scripts/verify_step.py (各 phase 機械検証)' as a required scaffold artifact; §3 line 494: 'verify_step.py 不在 → current_step = \"S0\" で cold-build'.",
+      "impact": "S8/S9/S10 self-resume after /compact will fall back to S0 cold-build, losing protocol state. Not a SHIP-quality blocker for the user-facing v0.1.0a1 artifact, but a protocol-fidelity blocker for the self-drive contract."
+    }
+  ],
+  "nits": [
+    {
+      "id": "B-N1",
+      "title": "README:75 uses idiom 'first-class SSM carrier support' — borderline on checklist 2 ('first' self-claim absence)",
+      "evidence_file": "README.md:75",
+      "note": "'first-class' is a standard idiom for 'native / fully-supported'; banned-phrases.txt only blocks 'first ever', so CI green. But Agent B checklist item 2 reads 'first / 世界初 自称が ... 不在'. Recommend rephrase to 'native SSM carrier support' to remove ambiguity entirely.",
+      "ci_impact": "none (CI passes); pure cosmetic for honest-marketing strictness."
+    },
+    {
+      "id": "B-N2",
+      "title": "neelnanda Crosscoders missing from README prior-art table (checklist 3 lists 6 competitors; README names 5)",
+      "evidence_file": "README.md:70-76",
+      "competitors_listed": ["gavagai", "AlignSAE", "Anthropic crosscoder", "SPARC", "ckkissane", "OpenMOSS/Llamascopium"],
+      "competitors_in_checklist_3": ["gavagai", "AlignSAE", "Anthropic crosscoder", "ckkissane", "neelnanda", "SPARC"],
+      "missing": ["neelnanda Crosscoders"],
+      "fix": "Add one bullet: '**neelnanda Crosscoders** (interpretability tutorials) — pedagogical 2-model crosscoder. polyalign is N>=2 multi-architecture with OTCP coverage band per vertex.'",
+      "ci_impact": "none (CI grep only requires gavagai/AlignSAE/crosscoder — all present)."
+    },
+    {
+      "id": "B-N3",
+      "title": "[project.scripts] entry-point name drift vs protocol",
+      "evidence_file": "pyproject.toml:39 ('polyalign.cli:app') vs bootstrap_protocol §1 S1 line 80 ('polyalign.cli:lint')",
+      "note": "Live `uv run polyalign-lint --help` works (verified rc=0); entry resolves. Protocol intent satisfied — but text drift between protocol and impl. Pick one and align."
+    },
+    {
+      "id": "B-N4",
+      "title": "Word 'novel' used 3x in README/CHANGELOG for polytope-vertex core",
+      "evidence_file": "README.md:65,85, CHANGELOG.md:17",
+      "note": "'novel' is softer than 'first' but is a self-claim of originality. The composition (Pareto-front + cycle-consistency on top of pairwise Sinkhorn-OT alignments) is plausibly novel given the prior-art table, so defensible. Suggest 'polyalign-specific' or 'newly composed' if maximum honest-marketing strictness preferred."
+    }
+  ],
+  "checklist_results": {
+    "1_banned_phrase_grep": "pass — banned-phrases.txt ERE OR-join over README/docs/NOTICE/CHANGELOG/SECURITY returns rc=1 (no match); printf-fed grep returns rc=0 as expected (mechanics verified).",
+    "2_first_world_first_self_claim": "pass-with-nit — no 'first ever' / '世界初' / '業界初' anywhere; 'first-class SSM carrier support' is idiomatic but borderline (B-N1).",
+    "3_prior_art_diff": "pass-with-nit — gavagai/AlignSAE/Anthropic crosscoder/ckkissane/SPARC + OpenMOSS named in README:70-76; neelnanda missing per checklist 3 (B-N2).",
+    "4_CLAIM_consistency": "FAIL — CLAIM.md:9 [CLAIM] OTCP 100/95% but test_otcp.py implements 60/50% with 15% slack (B-B1).",
+    "5_synthetic_DEMO_disclaimer": "pass — '[DEMO]' grep over README (3 hits) / CLAIM.md (2 hits) / CHANGELOG.md (1 hit) all present; 36/36 ground-truth rows carry [DEMO]; ablation env_stamp.mode='synthetic' + case='C (S0 OQ3 degrade)'.",
+    "6_project_scripts_entry_real": "pass — `uv run polyalign-lint --help` rc=0, lists version/smoke/align subcommands; entry resolves to polyalign.cli:app (NIT B-N3 on name drift vs protocol).",
+    "7_vacuous_test_detection": "pass — `grep -rE '^\\s*assert\\s+True\\s*$' tests/` rc=1 (no match). test_polytope.py:16 has `assert 1 <= len(verts) <= 3` which is a real range bound, not vacuous.",
+    "8_placeholder_grep": "pass — no random literals or unjustified 4-digit float constants in src/polyalign/; all README floats reproducible byte-identical from results/v0.1.0a1_ablation.json (`uv run python scripts/render_readme.py && git diff --exit-code README.md` rc=0); CLI line 35 `np.random.default_rng(0)` is seeded smoke-test, not placeholder."
+  },
+  "evidence": [
+    {"file_line": "docs/CLAIM.md:9", "finding": "[CLAIM] OTCP marginal coverage >= 1-alpha over 100 bootstrap trials, 95% of the time (tests/test_otcp.py)"},
+    {"file_line": "tests/test_otcp.py:55", "finding": "docstring still says '100 bootstrap trials, 95%' (stale)"},
+    {"file_line": "tests/test_otcp.py:58,60,78,80", "finding": "actual: alpha=0.2 fixed, n_trials=60, 15% slack, threshold hits/n_trials >= 0.5"},
+    {"file_line": "README.md:75", "finding": "'polyalign ships OTCP coverage + Sinkhorn-OT + first-class SSM carrier support' — idiom borderline (B-N1)"},
+    {"file_line": "docs/CLAIM.md (all bullets)", "finding": "tag placement bullet-leading not line-leading — fails §7 grep (B-M1 / C-B3 consensus)"},
+    {"file_line": "docs/CLAIM.md:11", "finding": "claims 'strict copy and inherits foldconsensus's PAVA tests' but tests/test_calibration.py has freshly written tests (B-M2)"},
+    {"file_line": "scripts/ (verify_step.py absent)", "finding": "/compact resume cold-restarts from S0 per bootstrap §3 line 494 (B-M3)"},
+    {"file_line": "pyproject.toml:39", "finding": "entry 'polyalign.cli:app' resolves rc=0; protocol §1 S1 line 80 spec 'polyalign.cli:lint' — text drift (B-N3)"},
+    {"file_line": "results/v0.1.0a1_ablation.json all 7 settings", "finding": "top1=top5=0.000 is structurally expected under Case C (random Gaussian decoders + arbitrary synthetic labels); README:124 and CLAIM.md:25 honestly disclose this — Agent B does NOT concur with Agent C's C-B2 diagnosis of 'likely logic bug'. The zeros are an artifact of the honest synthetic setup, not a bug."},
+    {"file_line": "tests/test_polytope.py:16", "finding": "`assert 1 <= len(verts) <= 3` — real range check, not vacuous"},
+    {"file_line": "datasets/ground_truth_v0.1.0a1.jsonl", "finding": "36/36 rows carry [DEMO] prefix in prompt + concept_label; source_url=synthetic://polyalign/v0.1.0a1/Case-C — full disclosure"}
+  ],
+  "prior_art_diff_table": [
+    {"competitor": "gavagai (hinanohart, MIT, v0.2.1)", "polyalign_diff": "pairwise scalar score → polyalign returns ranked top-k vertex set with coverage band + Pareto front (N >= 2, M >= 1)", "in_readme": true},
+    {"competitor": "AlignSAE (arXiv 2512.02004)", "polyalign_diff": "training-time concept-aligned SAEs → polyalign is post-hoc over pre-trained SAEs (no retraining)", "in_readme": true},
+    {"competitor": "Anthropic crosscoder (closed-source)", "polyalign_diff": "closed 2-model diff → polyalign open-source N-model multi-architecture with OTCP coverage", "in_readme": true},
+    {"competitor": "ckkissane/crosscoder-model-diff-replication", "polyalign_diff": "Euclidean 2-model replication → polyalign adds OTCP + Sinkhorn-OT + SSM carrier", "in_readme": true},
+    {"competitor": "SPARC (arXiv 2507.06265)", "polyalign_diff": "training-time concept-aligned SAEs cross-modal → polyalign post-hoc, no SAE retraining", "in_readme": true},
+    {"competitor": "neelnanda Crosscoders (tutorials)", "polyalign_diff": "pedagogical 2-model crosscoder → polyalign N >= 2 multi-architecture with OTCP coverage band — NIT B-N2: should be added to README:70-76", "in_readme": false},
+    {"competitor": "OpenMOSS / Llamascopium", "polyalign_diff": "per-model Matryoshka SAE → polyalign cross-architecture Matryoshka with Sinkhorn-OT (extra mention in README:76)", "in_readme": true}
+  ],
+  "consensus_with_other_agents": {
+    "agent_C": {
+      "C-B1 (A+B verdicts absent)": "now resolved — Agent B writing concurrently with Agent C run; A still pending separately.",
+      "C-B2 (top1/top5 = 0.000 'likely bug')": "DISAGREE — Agent B reads run_ablation.py:95-109 (modulo on n_feat) + random Gaussian decoders + arbitrary synthetic labels and concludes the zeros are structurally expected under Case C and are honestly disclosed at README:124. Agent B does NOT treat C-B2 as a ship blocker. Recommend Agent C re-classify as nit or withdraw.",
+      "C-B3 (CLAIM tag format)": "AGREE — see B-M1. Independent confirmation."
+    }
+  },
+  "verdict_text": "DO-NOT-SHIP. One CRITICAL blocker (B-B1): docs/CLAIM.md:9 [CLAIM] tag asserts OTCP coverage at 100 trials / 95% rate, but tests/test_otcp.py implements 60 trials / 50% rate with 15% slack at fixed alpha=0.2 — the [CLAIM] is unverified by its cited test, violating honest-marketing absolutism. Three MAJOR issues (CLAIM tag format vs §7 grep, PAVA 'inherits tests' overclaim, missing verify_step.py for /compact resume). Four NITs. Agent B agrees with Agent C on the CLAIM-format issue but DISAGREES that top1=top5=0.000 is a logic bug — those zeros are the honestly disclosed outcome of random Gaussian decoders against arbitrary synthetic labels under Case C. Fix B-B1 by either raising the test or softening the CLAIM, and rerun S8 critic gate."
+}

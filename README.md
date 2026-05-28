@@ -125,13 +125,20 @@ Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 | setting | top1 | top5 | ece | otcp_coverage | n_vertices | cycle_consistency_rate |
 |---------|------|------|-----|---------------|------------|------------------------|
-| `cosine_r0.05_transformer-only` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
-| `cosine_r0.05_ssm-only` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
-| `cosine_r0.05_hybrid-only` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
-| `cosine_r0.05_mixed` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
-| `l2_r0.05_mixed` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
-| `cosine_r0.01_mixed` | 0.000 | 0.000 | 0.9983 | 1.0000 | 5 | 1.000 |
-| `cosine_r0.1_mixed` | 0.000 | 0.000 | 0.9997 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_transformer-only_random` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_transformer-only_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_ssm-only_random` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_ssm-only_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_hybrid-only_random` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_hybrid-only_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_mixed_random` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.05_mixed_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `l2_r0.05_mixed_random` | 0.000 | 0.000 | 0.9992 | 1.0000 | 5 | 1.000 |
+| `l2_r0.05_mixed_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.01_mixed_random` | 0.000 | 0.000 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.01_mixed_planted` | 0.042 | 0.208 | 0.9983 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.1_mixed_random` | 0.000 | 0.000 | 0.9997 | 1.0000 | 5 | 1.000 |
+| `cosine_r0.1_mixed_planted` | 0.042 | 0.208 | 0.9988 | 1.0000 | 5 | 1.000 |
 
 > Reproduce: `uv run python scripts/run_ablation.py --seed 0`
 
