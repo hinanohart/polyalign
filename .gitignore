@@ -1,0 +1,35 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Model weights (large)
+*.pt
+*.safetensors
+*.bin
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# WIP quarantine (R8 rm-forbidden)
+experiments/_wip/
+
+# OS
+.DS_Store
+Thumbs.db

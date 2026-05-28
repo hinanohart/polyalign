@@ -1,0 +1,38 @@
+polyalign
+Copyright 2026 hinanohart
+
+This product includes software derived from or composing the following projects:
+
+- gavagai (https://github.com/hinanohart/gavagai), MIT License
+  Used: HookedSAEBundle type / backends.saelens_adapter / gavagai_score pairwise score reference.
+
+- recurrentlens (https://github.com/hinanohart/recurrentlens), Apache License 2.0
+  Used: SSM hook convention (`out_proj_out`) for Mamba/SSM SAE feature extraction.
+
+- hybridlens (https://github.com/hinanohart/hybridlens), Apache License 2.0
+  Used: Hybrid (Mamba+Attention) SAE pattern reference.
+
+- saelet (https://github.com/hinanohart/saelet), Apache License 2.0
+  Used: cross-vendor SAE evaluation harness pattern.
+
+- foldgauge (https://github.com/hinanohart/foldgauge), Apache License 2.0
+  Used: split conformal prediction reference.
+
+- foldconsensus (https://github.com/hinanohart/foldconsensus), Apache License 2.0
+  Used: PAVA monotone calibration (vendored copy in polyalign/calibration/pava.py) +
+  equal-frequency ECE binning pattern.
+
+- mosaicraft-active-vision (https://github.com/hinanohart/mosaicraft), Apache License 2.0
+  Used: Sinkhorn-OT assignment pattern reference.
+
+- weightlock (https://github.com/hinanohart/weightlock), Apache License 2.0
+  Used: dependency license classification pattern.
+
+- POT - Python Optimal Transport (https://pythonot.github.io/), MIT License
+  Used: Sinkhorn-Knopp solver (ot.sinkhorn).
+
+Honest-marketing disclaimer:
+polyalign v0.1.0a1 is a pre-alpha release. Ablation metrics in v0.1.0a1
+are computed against synthetic ground truth (`[DEMO]`-prefixed feature pairs);
+real cross-model concept pair curation is deferred to v0.1.1.
+See docs/CLAIM.md for `[CLAIM]` vs `[non-CLAIM]` boundaries.

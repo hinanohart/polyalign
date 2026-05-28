@@ -1,0 +1,111 @@
+{
+  "env_stamp": {
+    "dataset_n": 36,
+    "mode": "synthetic",
+    "case": "C (S0 OQ3 degrade)",
+    "demo_prefix_enforced": true,
+    "hw": "cpu",
+    "os": "Linux",
+    "python": "3.12.3",
+    "date": "2026-05-28",
+    "seed": 0,
+    "version": "0.1.0a1",
+    "n_feat": 24,
+    "d_model": 12
+  },
+  "settings": [
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "transformer-only"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "ssm-only"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "hybrid-only"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.05,
+      "carrier_set": "mixed"
+    },
+    {
+      "cost": "l2",
+      "reg": 0.05,
+      "carrier_set": "mixed"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.01,
+      "carrier_set": "mixed"
+    },
+    {
+      "cost": "cosine",
+      "reg": 0.1,
+      "carrier_set": "mixed"
+    }
+  ],
+  "metrics_by_setting": {
+    "cosine_r0.05_transformer-only": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9992369604616476,
+      "otcp_coverage": 0.9999997259787079,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "cosine_r0.05_ssm-only": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9992369604616476,
+      "otcp_coverage": 0.9999997259787079,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "cosine_r0.05_hybrid-only": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9992369604616476,
+      "otcp_coverage": 0.9999997259787079,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "cosine_r0.05_mixed": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9992160218374374,
+      "otcp_coverage": 0.9999997684290798,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "l2_r0.05_mixed": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9992189320246404,
+      "otcp_coverage": 0.9999988453914834,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "cosine_r0.01_mixed": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.998304179956112,
+      "otcp_coverage": 1.0,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    },
+    "cosine_r0.1_mixed": {
+      "top1": 0.0,
+      "top5": 0.0,
+      "ece": 0.9997375607175191,
+      "otcp_coverage": 0.9999544031917658,
+      "n_vertices": 5,
+      "cycle_consistency_rate": 1.0
+    }
+  }
+}

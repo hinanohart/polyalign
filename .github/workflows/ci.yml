@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
+jobs:
+  test:
+    name: test (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: setup python
+        run: uv python install ${{ matrix.python }}
+      - name: install
+        run: uv sync --extra dev
+      - name: lint
+        run: uv run ruff check src tests
+      - name: typecheck
+        run: uv run mypy src/polyalign
+      - name: test
+        run: uv run pytest -ra --cov=polyalign --cov-report=term-missing --cov-fail-under=85

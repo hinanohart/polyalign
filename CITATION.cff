@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "polyalign: N-model M-architecture SAE alignment polytope"
+message: "If you use polyalign, please cite it as below."
+type: software
+authors:
+  - name: hinanohart
+license: Apache-2.0
+version: 0.1.0a1
+date-released: "2026-05-29"
+repository-code: "https://github.com/hinanohart/polyalign"
+url: "https://github.com/hinanohart/polyalign"
+keywords:
+  - sparse autoencoder
+  - mechanistic interpretability
+  - cross-architecture
+  - optimal transport
+  - conformal prediction
+  - alignment polytope
+abstract: >
+  polyalign aligns Sparse Autoencoder (SAE) feature dictionaries across
+  N >= 2 models and M >= 1 architectures (Transformer / SSM / Hybrid) and
+  returns an alignment polytope: a Pareto-front of top-k vertices, each
+  with a split-conformal coverage band and cycle-consistency check.

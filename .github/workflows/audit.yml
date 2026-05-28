@@ -1,0 +1,105 @@
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
+jobs:
+  banned-phrase:
+    name: banned phrase grep (honest-marketing)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ban list grep (ERE, BRE-safe, list loaded from .github/banned-phrases.txt)
+        run: |
+          # banned-phrases.txt is the single source of truth; user-facing
+          # docs MUST NOT literal-list those strings (self-reference trap
+          # per `feedback_ci-grep-bre-vs-ere-2026-05-24`). Each non-empty,
+          # non-comment line is OR-joined into one ERE alternation.
+          banned=$(grep -Ev '^\s*(#|$)' .github/banned-phrases.txt | paste -sd '|' -)
+          # rc verification (commit msg references this):
+          #   printf 'replaces gavagai\nfully automatic\n' | grep -Eni "$banned"
+          #   expected rc=0 (match)
+          if grep -rEni "$banned" README.md docs/ NOTICE CHANGELOG.md SECURITY.md 2>/dev/null; then
+            echo "::error::Banned phrase detected in user-facing docs"
+            exit 1
+          fi
+          echo "ok: no banned phrases in README/docs/NOTICE/CHANGELOG/SECURITY"
+
+  demo-prefix:
+    name: synthetic ground truth [DEMO] prefix enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: enforce [DEMO] prefix on synthetic pairs
+        run: |
+          if [ -f datasets/ground_truth_v0.1.0a1.jsonl ]; then
+            total=$(wc -l < datasets/ground_truth_v0.1.0a1.jsonl)
+            demo=$(grep -E '\[DEMO\]' datasets/ground_truth_v0.1.0a1.jsonl | wc -l)
+            if [ "$total" != "$demo" ]; then
+              echo "::error::ground truth has $total lines but only $demo carry [DEMO] (Case C requires every synthetic row tagged)"
+              exit 1
+            fi
+            if [ "$total" -lt 30 ]; then
+              echo "::error::ground truth count $total < 30 (S0 OQ3 requirement)"
+              exit 1
+            fi
+            echo "ok: all $total synthetic pairs carry [DEMO] prefix"
+          else
+            echo "::error::datasets/ground_truth_v0.1.0a1.jsonl missing"
+            exit 1
+          fi
+
+  diff-disclaimer:
+    name: required differentiation disclaimer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: README must name gavagai / AlignSAE / crosscoder
+        run: |
+          missing=()
+          for term in 'gavagai' 'AlignSAE' 'crosscoder'; do
+            if ! grep -qi "$term" README.md; then
+              missing+=("$term")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::differentiation disclaimer missing: ${missing[*]}"
+            exit 1
+          fi
+          echo "ok: all 3 prior-art differentiation terms present in README"
+
+  vacuous-test:
+    name: vacuous test detector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: forbid bare assert True
+        run: |
+          if grep -rE '^\s*assert\s+True\s*$' tests/ 2>/dev/null; then
+            echo "::error::vacuous assert True detected in tests/"
+            exit 1
+          fi
+          echo "ok: no vacuous asserts"
+
+  claim-tags:
+    name: CLAIM.md tag enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: every bullet must be tagged [CLAIM] or [non-CLAIM]
+        run: |
+          # find lines beginning with '- ' that have no [CLAIM] / [non-CLAIM] tag
+          untagged=$(grep -E '^- ' docs/CLAIM.md | grep -vE '\[(CLAIM|non-CLAIM)\]' || true)
+          if [ -n "$untagged" ]; then
+            echo "::error::docs/CLAIM.md has untagged bullets:"
+            echo "$untagged"
+            exit 1
+          fi
+          echo "ok: all docs/CLAIM.md bullets carry [CLAIM] or [non-CLAIM]"
