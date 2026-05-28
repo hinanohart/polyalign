@@ -36,7 +36,15 @@ def test_ablation_results_json_exists() -> None:
     assert payload["env_stamp"]["mode"] == "synthetic"
     assert payload["env_stamp"]["demo_prefix_enforced"] is True
     for setting_key, metrics in payload["metrics_by_setting"].items():
-        for k in ("top1", "top5", "ece", "otcp_coverage", "n_vertices", "cycle_consistency_rate"):
+        for k in (
+            "top1",
+            "top5",
+            "top5_precision",
+            "ece",
+            "otcp_q",
+            "n_vertices",
+            "cycle_consistency_rate",
+        ):
             assert k in metrics, f"setting {setting_key} missing metric {k}"
             assert metrics[k] is not None, f"setting {setting_key}.{k} is null"
 

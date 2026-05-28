@@ -9,7 +9,7 @@ Produces `results/v0.1.0a1_ablation.json` with the schema:
       ...
     ],
     "metrics_by_setting": {
-      "<setting_key>": {top1, top5, ece, otcp_coverage, n_vertices,
+      "<setting_key>": {top1, top5, top5_precision, ece, otcp_q, n_vertices,
                          cycle_consistency_rate}
     }
   }
@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import platform
 import sys
 from pathlib import Path
@@ -156,13 +157,32 @@ def run_setting(
         top1_hits += int(in_top1)
         top5_hits += int(in_top5)
 
-    # ECE against vertex joint probabilities as predicted prob + synthetic
-    # ground truth correct=1.0 (under Case C, every synthetic pair is
-    # vacuously "correct"). This is honest in that ECE here measures
-    # only the *calibration shape*, not concept fidelity.
+    # ECE against vertex joint probabilities as predicted prob.
+    # - `random` regime: correct = ones (Case C, every synthetic pair is
+    #   vacuously labeled correct). ECE here measures only the gap of mean
+    #   vertex probability from 1.0, NOT calibration shape; documented in
+    #   docs/CLAIM.md `[non-CLAIM]` row on ECE.
+    # - `planted` regime: correct = (edge (0, 1, a, b) matches the planted
+    #   permutation for any vertex edge in [0, 1]). ECE here measures bin-wise
+    #   calibration of vertex probabilities against the known planted truth.
     if result.vertices:
         probs = np.array([v.joint_probability for v in result.vertices], dtype=np.float64)
-        correct = np.ones_like(probs)
+        if regime == "planted":
+            target_set = {(a, b) for a, b in target_pairs}
+            correct = np.array(
+                [
+                    1.0
+                    if any(
+                        edge[0] == 0 and edge[1] == 1 and (edge[2], edge[3]) in target_set
+                        for edge in v.model_pairs
+                    )
+                    else 0.0
+                    for v in result.vertices
+                ],
+                dtype=np.float64,
+            )
+        else:
+            correct = np.ones_like(probs)
         ece = expected_calibration_error(probs, correct, n_bins=min(5, len(probs)))
     else:
         ece = 0.0
@@ -175,11 +195,15 @@ def run_setting(
     mgr = multi_granularity_alignment(bundles[0], bundles[1])
     _ = mgr.prefix_lengths
 
+    # top5 is bounded above by min(top_k, n_target_pairs)/n_target_pairs.
+    # In v0.1.0a2 top_k=5 and the planted regime has n_target_pairs=n_feat;
+    # see docs/CLAIM.md and README footnote.
     return {
         "top1": top1_hits / max(used, 1),
         "top5": top5_hits / max(used, 1),
+        "top5_precision": top5_hits / max(min(5, used), 1),
         "ece": float(ece),
-        "otcp_coverage": float(result.coverage.quantile),
+        "otcp_q": float(result.coverage.quantile),
         "n_vertices": len(result.vertices),
         "cycle_consistency_rate": cycle_rate,
     }
@@ -248,7 +272,10 @@ def main(argv: list[str] | None = None) -> int:
             "hw": "cpu",
             "os": platform.system(),
             "python": platform.python_version(),
-            "date": dt.datetime.now(dt.UTC).date().isoformat(),
+            "date": os.environ.get(
+                "POLYALIGN_REPRO_DATE",
+                dt.datetime.now(dt.UTC).date().isoformat(),
+            ),
             "seed": args.seed,
             "version": __version__,
             "n_feat": args.n_feat,

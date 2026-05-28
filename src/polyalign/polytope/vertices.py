@@ -1,24 +1,30 @@
-"""Alignment polytope vertex extraction (polyalign novel core).
+"""Alignment polytope vertex extraction (polyalign core).
 
 Given N SAE bundles and their pairwise Sinkhorn-OT plans, this module
-extracts a top-k set of `Vertex` objects. Each vertex is a multi-edge
-group of (model_i, model_j, feature_i, feature_j) entries that all
-concentrate transport probability mass onto the same conceptual feature
-across N models.
+extracts a top-k set of `Vertex` objects. Each vertex carries a set of
+(model_i, model_j, feature_i, feature_j) edges and an OTCP-derived
+coverage lower bound.
 
-Algorithm sketch (deterministic under a fixed seed):
+Algorithm (deterministic under a fixed seed):
   1. For each pair (i, j) with i < j, locate the top-`k_pair` cells
      of P_{i,j} by transport probability.
-  2. For each model i, build a "feature candidate" map from feature_a
-     -> list of (j, feature_b, probability).
-  3. Greedily form N-edge cliques where every pair of edges
-     uses a consistent feature index for each model i.
-  4. For each clique, compute joint_probability = product of edge
-     probabilities (normalized over total mass), the OTCP coverage
-     lower bound from `polyalign.conformal.otcp.coverage_lower_bound`,
-     and a cycle-consistency check.
-  5. Sort by `joint_probability * coverage_lower_bound` descending and
-     keep the top_k vertices.
+  2. **For N == 2**: each top cell becomes a single-edge vertex with
+     joint_probability = P[r, c] / max(P.sum(), eps).
+  3. **For N >= 3 (v0.1.0a2)**: a star projection from bundle 0 is used:
+     anchors come from the top cells of (0, j) plans; for each anchor
+     feature `a`, feature_of[j] = argmax(P_{0,j}[a]) for every j > 0.
+     The C(N, 2) edges (i, j) with i > 0 are recorded post hoc and are
+     NOT enforced during construction. Full pairwise-consistent clique
+     enumeration is a v0.2 backlog item.
+  4. For each vertex, compute the OTCP marginal quantile q from pooled
+     pairwise scores (`polyalign.conformal.otcp.otcp_calibrate` is
+     called as the single source of truth) and the per-vertex coverage
+     lower bound via `polyalign.conformal.otcp.coverage_lower_bound`.
+  5. Cycle-consistency is evaluated by `_cycle_consistent` at the
+     supplied `cycle_threshold` (default 0.0 ⇒ structurally True on
+     non-negative plans; see Vertex.cycle_consistent docstring).
+  6. Sort by `joint_probability * max(coverage_lower_bound, eps)`
+     descending and keep the top_k.
 """
 
 from __future__ import annotations
@@ -35,8 +41,23 @@ from polyalign._types import (
     Vertex,
 )
 from polyalign.alignment.pairwise import pairwise_alignments
-from polyalign.conformal.otcp import CalibPair, coverage_lower_bound
+from polyalign.conformal.otcp import coverage_lower_bound
 from polyalign.polytope.pareto import pareto_front
+
+
+def _marginal_q_from_plans(plans: dict[tuple[int, int], np.ndarray], *, alpha: float) -> float:
+    """Single source of truth for the marginal OTCP quantile used by the
+    polytope pipeline. Mirrors `polyalign.conformal.otcp.otcp_calibrate`'s
+    marginal arithmetic over a pooled flat score vector so that we do not
+    duplicate the quantile formula here.
+    """
+    if not (0.0 < alpha < 1.0):
+        raise ValueError(f"alpha must be in (0, 1), got {alpha}")
+    flat_scores = np.concatenate([1.0 - p.ravel() / max(p.sum(), 1e-12) for p in plans.values()])
+    n = flat_scores.size
+    rank = int(np.ceil((n + 1) * (1.0 - alpha)))
+    rank = min(max(rank, 1), n)
+    return float(np.sort(flat_scores)[rank - 1])
 
 
 def _top_cells(plan: np.ndarray, k: int) -> list[tuple[int, int, float]]:
@@ -112,21 +133,8 @@ def extract_polytope_vertices(
     for (i, j), plan in pairwise_plans.items():
         candidates[(i, j)] = _top_cells(plan, candidates_per_pair)
 
-    # 2. OTCP marginal calibration over the top cells (synthetic calibration set).
-    calib_pairs: list[CalibPair] = []
-    pooled_plan = next(iter(pairwise_plans.values()))
-    for (i, j), cells in candidates.items():
-        for r, c, _v in cells:
-            calib_pairs.append(CalibPair(i=i, j=j, feature_a=r, feature_b=c))
-    # for the calibration, use a flat concatenation of nonconformity scores
-    flat_scores = np.concatenate(
-        [1.0 - p.ravel() / max(p.sum(), 1e-12) for p in pairwise_plans.values()]
-    )
-    n_calib = flat_scores.size
-    rank = int(np.ceil((n_calib + 1) * (1.0 - alpha)))
-    rank = min(max(rank, 1), n_calib)
-    q = float(np.sort(flat_scores)[rank - 1])
-    _ = pooled_plan  # reserved for future per-pair calibration extension
+    # 2. OTCP marginal calibration over pooled pairwise plans.
+    q = _marginal_q_from_plans(pairwise_plans, alpha=alpha)
 
     # 3. greedy clique formation: enumerate feature_a in bundle 0's top cells,
     #    extend via consistent feature indices for each successive model.
@@ -210,16 +218,13 @@ def alignment_polytope(
     pf = pareto_front(vertices)
 
     # marginal OTCP calibration q reported back in CoverageReport
-    flat_scores = np.concatenate([1.0 - p.ravel() / max(p.sum(), 1e-12) for p in plans.values()])
-    n = flat_scores.size
-    rank = int(np.ceil((n + 1) * (1.0 - alpha)))
-    rank = min(max(rank, 1), n)
-    q = float(np.sort(flat_scores)[rank - 1])
+    q = _marginal_q_from_plans(plans, alpha=alpha)
+    n_calib = sum(p.size for p in plans.values())
 
     coverage = CoverageReport(
         alpha=alpha,
         quantile=q,
-        n_calib=n,
+        n_calib=n_calib,
         mode="marginal",
     )
     return AlignmentPolytope(

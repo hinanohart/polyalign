@@ -1,6 +1,6 @@
 [project]
 name = "polyalign"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "N-model M-architecture SAE alignment polytope: Sinkhorn-OT pairwise x Matryoshka prefix x OTCP split conformal coverage. Composes gavagai/recurrentlens/hybridlens/saelet/foldgauge/foldconsensus."
 readme = "README.md"
 requires-python = ">=3.10"

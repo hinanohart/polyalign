@@ -14,7 +14,7 @@ def test_cli_version_emits_string() -> None:
     runner = CliRunner()
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert "0.1.0a1" in result.stdout
+    assert result.stdout.strip().startswith("0.1.0")
 
 
 def test_cli_smoke_succeeds() -> None:

@@ -25,9 +25,34 @@ def test_polytope_3_bundles_cycle_consistency(
     plans = pairwise_alignments([bundle_a, bundle_b, bundle_ssm])
     verts = extract_polytope_vertices([bundle_a, bundle_b, bundle_ssm], plans, top_k=5)
     assert len(verts) >= 1
-    # At least one vertex should be cycle-consistent on random data with
-    # cycle_threshold=0 (the default).
-    assert any(v.cycle_consistent for v in verts)
+    # At the default cycle_threshold=0 the predicate is structurally True on
+    # non-negative plans (documented in docs/CLAIM.md [non-CLAIM]); this test
+    # only asserts the predicate is well-formed.
+    assert all(v.cycle_consistent for v in verts)
+
+
+def test_polytope_3_bundles_cycle_threshold_discriminates(
+    bundle_a: SAEBundle, bundle_b: SAEBundle, bundle_ssm: SAEBundle
+) -> None:
+    """At a non-trivial threshold > 0, the cycle predicate must discriminate.
+
+    Pinned by the v0.1.0a2 post-/compact audit (Agent A MAJOR-1 + Meta MINOR-8):
+    cycle_consistent at default 0.0 is structurally True; a positive threshold
+    sufficiently above pooled-plan cell mass should drive the predicate to
+    return False for star-projection vertices on random Gaussian decoders.
+    """
+    plans = pairwise_alignments([bundle_a, bundle_b, bundle_ssm])
+    # threshold much larger than any single plan cell on doubly-stochastic
+    # uniform plans (n_a * n_b cells, mass ~ 1/(n_a*n_b)) — predicate must
+    # reject at least one vertex.
+    verts = extract_polytope_vertices(
+        [bundle_a, bundle_b, bundle_ssm], plans, top_k=5, cycle_threshold=1.0
+    )
+    assert len(verts) >= 1
+    assert not all(v.cycle_consistent for v in verts), (
+        "cycle predicate failed to discriminate at threshold=1.0; "
+        "test_polytope_3_bundles_cycle_threshold_discriminates regression"
+    )
 
 
 def test_polytope_too_few_bundles(bundle_a: SAEBundle) -> None:

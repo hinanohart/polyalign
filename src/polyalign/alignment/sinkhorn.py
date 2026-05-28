@@ -113,4 +113,11 @@ def sinkhorn_align(
         numItermax=max_iter,
         stopThr=tol,
     )
-    return np.asarray(plan, dtype=np.float64)
+    plan_arr = np.asarray(plan, dtype=np.float64)
+    if not np.all(np.isfinite(plan_arr)):
+        raise RuntimeError(
+            f"Sinkhorn did not converge to a finite plan "
+            f"(reg={reg}, max_iter={max_iter}); plan contains NaN/Inf. "
+            "Try a larger reg or higher max_iter."
+        )
+    return plan_arr

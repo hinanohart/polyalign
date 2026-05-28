@@ -19,11 +19,17 @@ Vertices and the per-vertex coverage report.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Final, Literal
 
 import numpy as np
 
 Architecture = Literal["transformer", "ssm", "hybrid"]
+
+MAMBA_SSM_HOOK_SITE: Final[str] = "out_proj_out"
+"""recurrentlens convention for the Mamba/SSM hook site used during SAE feature
+extraction. Recorded as a constant in v0.1.0a2 so that downstream code can
+reference the agreed string without re-parsing docs. Live Mamba hook
+extraction lands in v0.1.1 (see docs/CLAIM.md `Live model integration`)."""
 
 
 @dataclass(frozen=True)
@@ -74,16 +80,30 @@ class Vertex:
     """One alignment polytope vertex (a conceptually-aligned feature group)."""
 
     model_pairs: tuple[tuple[int, int, int, int], ...]
-    """Tuple of (model_i, model_j, feature_i, feature_j) edges making this vertex."""
+    """Tuple of (model_i, model_j, feature_i, feature_j) edges associated with this
+    vertex. For N>=3 in v0.1.0a2 the feature indices are chosen by a star projection
+    from bundle 0 (feature_j = argmax of P_{0,j}[anchor]); edges (i,j) with i>0 are
+    recorded for downstream reporting and not enforced during construction. Full
+    pairwise-consistent clique enumeration is deferred to v0.2."""
 
     joint_probability: float
-    """Product of Sinkhorn transport probabilities for all edges (normalized)."""
+    """For N=2: P_{0,1}[feature_0, feature_1] / max(P_{0,1}.sum(), eps).
+    For N>=3: product of edge probabilities (0,j) for j>0 from the star projection;
+    NOT normalized to a probability and may take values outside [0, 1] (the
+    `extract_polytope_vertices` test only asserts the N=2 path is in [0, 1])."""
 
     coverage_lower_bound: float
-    """Split-conformal lower bound on coverage probability for this vertex."""
+    """Split-conformal heuristic lower bound on coverage for this vertex. On the
+    synthetic Gaussian decoders used in v0.1.0a2 the marginal quantile q approaches
+    1.0 by construction (nonconformity = 1 - p with p ~ 1/(n_a*n_b)), so this
+    value numerically approaches `joint_probability`. See docs/CLAIM.md."""
 
     cycle_consistent: bool
-    """True iff for every triangle (A, B, C), A->B + B->C is consistent with A->C."""
+    """Output of the `_cycle_consistent` predicate. At the default
+    `cycle_threshold=0.0` this is structurally True for any non-negative transport
+    plan (the predicate `direct < 0 and composed < 0` cannot fire). A non-trivial
+    threshold > 0 is required for the flag to discriminate; a positive default
+    will land in v0.2."""
 
 
 @dataclass(frozen=True)
