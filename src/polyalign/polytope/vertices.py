@@ -133,14 +133,14 @@ def extract_polytope_vertices(
     vertices_raw: list[Vertex] = []
     if n_bundles == 2:
         for r, c, v in candidates[(0, 1)]:
-            edges = ((0, 1, r, c),)
+            pair_edges: tuple[tuple[int, int, int, int], ...] = ((0, 1, r, c),)
             joint_p = v / max(pairwise_plans[(0, 1)].sum(), 1e-12)
             lb = coverage_lower_bound(
                 v / max(pairwise_plans[(0, 1)].sum(), 1e-12), q, mode="marginal"
             )
             vertices_raw.append(
                 Vertex(
-                    model_pairs=edges,
+                    model_pairs=pair_edges,
                     joint_probability=float(joint_p),
                     coverage_lower_bound=lb,
                     cycle_consistent=True,
@@ -163,11 +163,11 @@ def extract_polytope_vertices(
             valid = True
             edge_probs: list[float] = []
             for j in range(1, n_bundles):
-                plan = pairwise_plans.get((0, j))
-                if plan is None:
+                plan_j = pairwise_plans.get((0, j))
+                if plan_j is None:
                     valid = False
                     break
-                row = plan[anchor_feat]
+                row = plan_j[anchor_feat]
                 best_j = int(np.argmax(row))
                 feature_of[j] = best_j
                 edge_probs.append(float(row[best_j]))
@@ -177,7 +177,7 @@ def extract_polytope_vertices(
             for i in range(n_bundles):
                 for j in range(i + 1, n_bundles):
                     edges_list.append((i, j, feature_of[i], feature_of[j]))
-            edges = tuple(edges_list)
+            edges: tuple[tuple[int, int, int, int], ...] = tuple(edges_list)
             denom = max(sum(p.sum() for p in pairwise_plans.values()), 1e-12)
             joint_p_raw = float(np.prod(edge_probs))
             joint_p = joint_p_raw / denom if denom > 0 else 0.0

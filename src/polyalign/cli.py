@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal, cast
 
 import typer
 
@@ -77,12 +78,16 @@ def align(
         if not p.exists():
             raise typer.BadParameter(f"bundle file not found: {p}")
         data = np.load(p, allow_pickle=False)
+        arch_str = str(data["architecture"]) if "architecture" in data.files else "transformer"
+        if arch_str not in ("transformer", "ssm", "hybrid"):
+            raise typer.BadParameter(
+                f"unsupported architecture in {p}: {arch_str!r} (expected transformer|ssm|hybrid)"
+            )
+        arch = cast(Literal["transformer", "ssm", "hybrid"], arch_str)
         loaded.append(
             SAEBundle(
                 model_id=str(data["model_id"]) if "model_id" in data.files else f"model_{i}",
-                architecture=(
-                    str(data["architecture"]) if "architecture" in data.files else "transformer"
-                ),
+                architecture=arch,
                 layer=int(data["layer"]) if "layer" in data.files else 0,
                 decoder=np.asarray(data["decoder"], dtype=np.float32),
                 encoder=(

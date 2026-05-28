@@ -99,15 +99,17 @@ def otcp_calibrate_conditional(
         score = _scores_from_plan(plan, [pair])[0]
         arch_i = bundles[pair.i].architecture
         arch_j = bundles[pair.j].architecture
-        key = tuple(sorted([arch_i, arch_j]))  # type: ignore[assignment]
-        grouped.setdefault(key, []).append(float(score))  # type: ignore[arg-type]
+        a, b = sorted((str(arch_i), str(arch_j)))
+        key: tuple[str, str] = (a, b)
+        grouped.setdefault(key, []).append(float(score))
 
     out: dict[tuple[str, str], float] = {}
     for key, scores in grouped.items():
         n = len(scores)
         rank = int(np.ceil((n + 1) * (1.0 - alpha)))
         rank = min(max(rank, 1), n)
-        out[key] = float(np.sort(scores)[rank - 1])  # type: ignore[index]
+        sorted_scores = np.sort(np.asarray(scores, dtype=np.float64))
+        out[key] = float(sorted_scores[rank - 1])
     return out
 
 

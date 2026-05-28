@@ -78,3 +78,8 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "RUF"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/verify_step.py: check_S0, check_S1, ... are named after the
+# bootstrap protocol phase ids (S0, S1, ...). Allow the uppercase phase.
+"scripts/verify_step.py" = ["N802"]
