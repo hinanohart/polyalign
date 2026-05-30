@@ -1,7 +1,7 @@
 # polyalign
 
 [![status](https://img.shields.io/badge/status-pre--alpha-orange.svg)](https://github.com/hinanohart/polyalign/releases)
-[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](pyproject.toml)
 
 > **N-model M-architecture SAE alignment polytope** — Sinkhorn-OT pairwise x Matryoshka prefix x OTCP split conformal coverage.
@@ -107,7 +107,7 @@ See [docs/CLAIM.md](docs/CLAIM.md), [CHANGELOG.md](CHANGELOG.md) for the full sc
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+MIT License. See [LICENSE](LICENSE).
 
 ## Citation
 
@@ -118,7 +118,7 @@ Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
   year   = {2026},
   url    = {https://github.com/hinanohart/polyalign},
   version = {0.1.0a2},
-  license = {Apache-2.0},
+  license = {MIT},
 }
 ```
 
