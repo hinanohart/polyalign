@@ -72,6 +72,6 @@ Every assertion below begins at column 0 with either `[CLAIM]` (polyalign assert
 
 ## License
 
-[CLAIM] polyalign is released under Apache License 2.0 (see `LICENSE`).
+[CLAIM] polyalign is released under the MIT License (see `LICENSE`).
 
 [CLAIM] All vendored / referenced upstream projects are listed in `NOTICE` with their license.
