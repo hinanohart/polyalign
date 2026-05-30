@@ -4,7 +4,7 @@ message: "If you use polyalign, please cite it as below."
 type: software
 authors:
   - name: hinanohart
-license: Apache-2.0
+license: MIT
 version: 0.1.0a1
 date-released: "2026-05-29"
 repository-code: "https://github.com/hinanohart/polyalign"
