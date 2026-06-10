@@ -14,15 +14,15 @@
 
 ```mermaid
 flowchart TD
-    A[SAEBundle inputs\nN models x M architectures] --> B[Pairwise cost matrix\ncosine or L2 per arch pair]
-    B --> C[Sinkhorn_OT plans\nPOT library]
-    C --> E[Vertex extraction\ntop-k cells per plan]
-    E --> F[OTCP calibration\nsplit-conformal quantile q]
-    F --> G[Coverage lower bound\nper vertex]
-    E --> H[Cycle consistency check\nstar projection N2 or N3]
-    G --> I[Pareto front\nranked by prob x coverage]
+    A[SAEBundle inputs<br>N models x M architectures] --> B[Pairwise cost matrix<br>cosine or L2 per arch pair]
+    B --> C[Sinkhorn_OT plans<br>POT library]
+    C --> E[Vertex extraction<br>top-k cells per plan]
+    E --> F[OTCP calibration<br>split-conformal quantile q]
+    F --> G[Coverage lower bound<br>per vertex]
+    E --> H[Cycle consistency check<br>star projection N2 or N3]
+    G --> I[Pareto front<br>ranked by prob x coverage]
     H --> I
-    I --> J[AlignmentPolytope\nvertices plus ParetoFront plus CoverageReport]
+    I --> J[AlignmentPolytope<br>vertices plus ParetoFront plus CoverageReport]
 ```
 
 ---
