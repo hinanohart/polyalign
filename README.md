@@ -8,9 +8,31 @@
 
 `polyalign` aligns Sparse Autoencoder (SAE) feature dictionaries across **N >= 2 models** and **M >= 1 architectures** (Transformer / SSM / Hybrid), and returns an **alignment polytope** — a Pareto-front of top-k vertices, each with a split-conformal coverage band and cycle-consistency check.
 
+---
+
+## Architecture / Data Flow
+
+```mermaid
+flowchart TD
+    A[SAEBundle inputs\nN models x M architectures] --> B[Pairwise cost matrix\ncosine or L2 per arch pair]
+    B --> C[Sinkhorn_OT plans\nPOT library]
+    C --> D[Matryoshka prefix\n4-stage nested alignment]
+    D --> E[Vertex extraction\ntop-k cells per plan]
+    E --> F[OTCP calibration\nsplit-conformal quantile q]
+    F --> G[Coverage lower bound\nper vertex]
+    E --> H[Cycle consistency check\nstar projection N2 or N3]
+    G --> I[Pareto front\nranked by prob x coverage]
+    H --> I
+    I --> J[AlignmentPolytope\nvertices plus ParetoFront plus CoverageReport]
+```
+
+---
+
 ## Status
 
 > `v0.1.0a2` is a **pre-alpha** release (post-/compact 4-agent audit honest-marketing patch over `v0.1.0a1`; see [CHANGELOG.md](CHANGELOG.md) `[0.1.0a2]` for the full list of corrections). See [docs/CLAIM.md](docs/CLAIM.md) for the explicit `[CLAIM]` vs `[non-CLAIM]` boundary. **All ablation metrics in this release are computed against synthetic ground truth** (`[DEMO]`-prefixed feature pairs); real cross-model concept pair curation is deferred to `v0.1.1`.
+
+---
 
 ## Install
 
@@ -19,6 +41,8 @@ pip install polyalign
 # or with torch + transformers for live model SAE extraction (deferred to v0.1.1):
 pip install 'polyalign[torch,llama3,saelens]'
 ```
+
+---
 
 ## Quickstart
 
@@ -50,6 +74,8 @@ for v in result.vertices:
 # calibration set is supplied (v0.1.1). See docs/CLAIM.md.
 ```
 
+---
+
 ## CLI
 
 ```bash
@@ -57,7 +83,18 @@ polyalign-lint --help
 polyalign-lint align --bundles bundle_a.npz,bundle_b.npz --top-k 5
 ```
 
-## What polyalign computes
+---
+
+## How it works
+
+`polyalign` composes several techniques to produce an alignment polytope from raw SAE decoder matrices:
+
+1. **Pairwise cost matrix** — builds a feature-similarity cost matrix for each model pair, applying architecture-aware adjustments (e.g., `out_proj_out` hook convention for SSM/Mamba via `recurrentlens`).
+2. **Sinkhorn-OT plans** — solves optimal transport on each pair's cost matrix using the [POT](https://pythonot.github.io/) library; a post-call NaN/Inf guard is applied.
+3. **Matryoshka prefix alignment** — runs a 4-stage nested prefix alignment consistent with Bussmann et al. 2025 monotonicity (non-increasing reconstruction error in prefix length, verified on synthetic seeds).
+4. **Vertex extraction** — identifies top-k high-transport-probability cells from each pairwise plan. For N=2 each cell becomes one vertex; for N>=3 a star projection from bundle 0 is used (full clique enumeration deferred to v0.2).
+5. **OTCP split-conformal calibration** — pools pairwise nonconformity scores and computes the marginal quantile `q` at the requested `alpha`, then derives a per-vertex `coverage_lower_bound`.
+6. **Pareto front** — ranks vertices by `joint_probability * coverage_lower_bound` and returns the top-k as an `AlignmentPolytope`.
 
 | Layer | Component | Source |
 |-------|-----------|--------|
@@ -67,6 +104,8 @@ polyalign-lint align --bundles bundle_a.npz,bundle_b.npz --top-k 5
 | Calib | OTCP split conformal threshold q | foldgauge / arXiv 2501.18991 |
 | Calib | PAVA monotone isotonic | foldconsensus (vendored copy) |
 | Out   | Alignment polytope vertices + Pareto front | polyalign (N=2 single edge; N>=3 star projection from bundle 0, full clique enumeration deferred to v0.2) |
+
+---
 
 ## Related work
 
@@ -79,6 +118,8 @@ polyalign-lint align --bundles bundle_a.npz,bundle_b.npz --top-k 5
 - **`ckkissane/crosscoder-model-diff-replication`** — Anthropic crosscoder Euclidean replication. `polyalign` ships OTCP coverage + Sinkhorn-OT + native SSM carrier support.
 - **`neelnanda-io/Crosscoders`** — early open-source crosscoder reference impl, 2-model + Transformer. `polyalign` ships N >= 2, SSM/Transformer/Hybrid carrier mix, OTCP split-conformal coverage band per vertex.
 - **OpenMOSS / Llamascopium** — per-model Matryoshka SAE. `polyalign` ships **cross-architecture** Matryoshka with Sinkhorn-OT pairwise alignment.
+
+---
 
 ## Honest-marketing scope
 
@@ -105,9 +146,13 @@ polyalign v0.1.0a2 does **not** ship:
 
 See [docs/CLAIM.md](docs/CLAIM.md), [CHANGELOG.md](CHANGELOG.md) for the full scope.
 
+---
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
+
+---
 
 ## Citation
 
@@ -121,6 +166,8 @@ MIT License. See [LICENSE](LICENSE).
   license = {MIT},
 }
 ```
+
+---
 
 ## Reproducibility
 
