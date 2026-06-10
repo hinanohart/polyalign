@@ -12,18 +12,9 @@
 
 ## Architecture / Data Flow
 
-```mermaid
-flowchart TD
-    A[SAEBundle inputs<br>N models x M architectures] --> B[Pairwise cost matrix<br>cosine or L2 per arch pair]
-    B --> C[Sinkhorn_OT plans<br>POT library]
-    C --> E[Vertex extraction<br>top-k cells per plan]
-    E --> F[OTCP calibration<br>split-conformal quantile q]
-    F --> G[Coverage lower bound<br>per vertex]
-    E --> H[Cycle consistency check<br>star projection N2 or N3]
-    G --> I[Pareto front<br>ranked by prob x coverage]
-    H --> I
-    I --> J[AlignmentPolytope<br>vertices plus ParetoFront plus CoverageReport]
-```
+<div align="center">
+  <img src="docs/architecture.png" alt="polyalign architecture" width="840">
+</div>
 
 ---
 
@@ -205,3 +196,4 @@ MIT License. See [LICENSE](LICENSE).
 > Reproduce: `uv run python scripts/run_ablation.py --seed 0`
 
 <!-- ABLATION:END -->
+

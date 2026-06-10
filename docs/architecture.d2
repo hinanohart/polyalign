@@ -1,0 +1,46 @@
+direction: down
+explanation: |md
+  ### polyalign
+  **N-model M-architecture SAE alignment polytope — Sinkhorn-OT pairwise x Matryoshka prefix x OTCP split-conformal coverage.**
+| {near: top-center}
+
+input: "① SAEBundle inputs\nN models × M architectures" {shape: oval; style: {fill: "#6366f1"; font-color: "#ffffff"; stroke: "#4338ca"; bold: true; font-size: 18}}
+
+cost: "② Pairwise cost matrix\ncosine or L2 per arch pair" {style: {fill: "#0ea5e9"; font-color: "#ffffff"; stroke: "#0369a1"; bold: true; font-size: 18}}
+
+transport_zone: "Optimal Transport" {
+  style: {fill: "#fffbeb"; stroke: "#f59e0b"; font-color: "#92400e"; bold: true; font-size: 16}
+  sinkhorn: "③ Sinkhorn OT plans\nPOT library"
+  vertex: "Vertex extraction\ntop-k cells per plan"
+  sinkhorn.style.fill: "#fef3c7"; sinkhorn.style.font-color: "#92400e"
+  vertex.style.fill: "#fef3c7"; vertex.style.font-color: "#92400e"
+}
+
+calibration_zone: "Conformal Calibration" {
+  style: {fill: "#f0fdf4"; stroke: "#10b981"; font-color: "#065f46"; bold: true; font-size: 16}
+  otcp: "④ OTCP calibration\nsplit-conformal quantile q"
+  coverage: "Coverage lower bound\nper vertex"
+  cycle: "Cycle consistency check\nstar projection N2 or N3"
+  *.style.fill: "#dcfce7"; *.style.font-color: "#065f46"
+}
+
+pareto: "⑤ Pareto front\nranked by prob × coverage" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true}}
+
+output: "⑥ AlignmentPolytope\nvertices + ParetoFront + CoverageReport" {shape: cylinder; style: {fill: "#fdf2f8"; font-color: "#9d174e"; stroke: "#ec4899"; bold: true}}
+
+input -> cost: "① build"
+cost -> transport_zone.sinkhorn: "② transport"
+transport_zone.sinkhorn -> transport_zone.vertex: "③ extract"
+transport_zone.vertex -> calibration_zone.otcp: "④ calibrate"
+calibration_zone.otcp -> calibration_zone.coverage: "④ bound"
+transport_zone.vertex -> calibration_zone.cycle: "④ check"
+calibration_zone.coverage -> pareto: "⑤ rank"
+calibration_zone.cycle -> pareto: "⑤ rank"
+pareto -> output: "⑥ assemble"
+
+legend: "Legend" {
+  near: bottom-center
+  style: {fill: "#f8fafc"; stroke: "#cbd5e1"; font-size: 13}
+  e: "● entry"; c: "● core/engine"; p: "● calibration"; b: "● OT transport"; d: "● output"
+  e.style.font-color: "#4338ca"; c.style.font-color: "#0369a1"; p.style.font-color: "#10b981"; b.style.font-color: "#f59e0b"; d.style.font-color: "#ec4899"
+}
