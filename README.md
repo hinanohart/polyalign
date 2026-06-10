@@ -16,8 +16,7 @@
 flowchart TD
     A[SAEBundle inputs\nN models x M architectures] --> B[Pairwise cost matrix\ncosine or L2 per arch pair]
     B --> C[Sinkhorn_OT plans\nPOT library]
-    C --> D[Matryoshka prefix\n4-stage nested alignment]
-    D --> E[Vertex extraction\ntop-k cells per plan]
+    C --> E[Vertex extraction\ntop-k cells per plan]
     E --> F[OTCP calibration\nsplit-conformal quantile q]
     F --> G[Coverage lower bound\nper vertex]
     E --> H[Cycle consistency check\nstar projection N2 or N3]
@@ -91,7 +90,7 @@ polyalign-lint align --bundles bundle_a.npz,bundle_b.npz --top-k 5
 
 1. **Pairwise cost matrix** — builds a feature-similarity cost matrix for each model pair, applying architecture-aware adjustments (e.g., `out_proj_out` hook convention for SSM/Mamba via `recurrentlens`).
 2. **Sinkhorn-OT plans** — solves optimal transport on each pair's cost matrix using the [POT](https://pythonot.github.io/) library; a post-call NaN/Inf guard is applied.
-3. **Matryoshka prefix alignment** — runs a 4-stage nested prefix alignment consistent with Bussmann et al. 2025 monotonicity (non-increasing reconstruction error in prefix length, verified on synthetic seeds).
+3. **Matryoshka prefix alignment** (`polyalign.matryoshka`) — a separate 4-stage nested prefix alignment module, consistent with Bussmann et al. 2025 monotonicity (non-increasing reconstruction error in prefix length, verified on synthetic seeds). This module is NOT invoked as a step in the main `alignment_polytope()` pipeline in v0.1.0a2; it runs independently (e.g., as a sanity check in the ablation script). Integration into the main pipeline is deferred.
 4. **Vertex extraction** — identifies top-k high-transport-probability cells from each pairwise plan. For N=2 each cell becomes one vertex; for N>=3 a star projection from bundle 0 is used (full clique enumeration deferred to v0.2).
 5. **OTCP split-conformal calibration** — pools pairwise nonconformity scores and computes the marginal quantile `q` at the requested `alpha`, then derives a per-vertex `coverage_lower_bound`.
 6. **Pareto front** — ranks vertices by `joint_probability * coverage_lower_bound` and returns the top-k as an `AlignmentPolytope`.
